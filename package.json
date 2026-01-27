@@ -1,0 +1,35 @@
+{
+  "name": "fsc-events",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "test": "vitest",
+    "prepare": "husky"
+  },
+  "engines": {
+    "node": ">=22",
+    "pnpm": ">=10"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@commitlint/cli": "19.8.1",
+    "@commitlint/config-conventional": "19.8.1",
+    "@eslint/js": "^9.31.0",
+    "@types/node": "^24.0.6",
+    "eslint": "^9.31.0",
+    "eslint-plugin-simple-import-sort": "12.1.1",
+    "globals": "^16.3.0",
+    "husky": "9.1.7",
+    "lint-staged": "12.3.2",
+    "prettier": "3.6.2",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.37.0",
+    "vitest": "3.2.4"
+  },
+  "dependencies": {
+    "eslint-config-prettier": "10.1.8"
+  }
+}
