@@ -1,15 +1,16 @@
+import { EventRepositoryDrizzle } from "../resources/EventRepository.js"
 import { CreateEvent, type EventRepository } from "./CreateEvent.js"
 
 describe("Create Event", () => {
-  class EventRepositoryInMemory implements EventRepository {
-    events: any[] = []
-    async create(input: any) {
-      this.events = [...this.events, input]
-      return input
-    }
-  }
+  // class EventRepositoryInMemory implements EventRepository {
+  //   events: any[] = []
+  //   async create(input: any) {
+  //     this.events = [...this.events, input]
+  //     return input
+  //   }
+  // }
 
-  const createEvent = new CreateEvent(new EventRepositoryInMemory())
+  const createEvent = new CreateEvent(new EventRepositoryDrizzle())
   it("Deve criar um evento com sucesso", async () => {
     const input = {
       name: "Evento de Teste",
@@ -24,6 +25,7 @@ describe("Create Event", () => {
     expect(output.id).toBeDefined()
     expect(output.name).toBe(input.name)
     expect(output.ticketPriceInCents).toBe(input.ticketPriceInCents)
+    expect(output.ownerId).toBe(input.ownerId)
   })
 
   it("Deve retornar 400 se o ownerId não for um UUID", async () => {
@@ -95,6 +97,29 @@ describe("Create Event", () => {
     const output = createEvent.execute(input)
     await expect(output).rejects.toThrow(
       new Error("Date must be in the future")
+    )
+  })
+
+  it.only("Deve lançar um erro se já existir um evento para a mesma data, latitude e longitude", async () => {
+    const date = new Date(new Date().setHours(new Date().getHours() + 2))
+    const input = {
+      name: "Evento de Teste",
+      ticketPriceInCents: 1000,
+      latitude: 45.0,
+      longitude: 180.0,
+      date,
+      ownerId: "123e4567-e89b-12d3-a456-426614174000",
+    }
+
+    const output = await createEvent.execute(input)
+    expect(output.name).toBe(input.name)
+    expect(output.ticketPriceInCents).toBe(input.ticketPriceInCents)
+
+    const output2 = createEvent.execute(input)
+    await expect(output2).rejects.toThrow(
+      new Error(
+        "Event already exisits"
+      )
     )
   })
 })

@@ -2,7 +2,7 @@ import { decimal, integer, pgTable, text, timestamp, uuid } from "drizzle-orm/pg
 
 export const events = pgTable("events", {
   id: uuid().primaryKey().defaultRandom(),
-  ownerId: uuid().notNull(),
+  owner_id: uuid().notNull(),
   name: text().notNull(),
   ticketPriceInCents: integer("ticket_price_in_cents").notNull(),
   latitude: decimal({ precision: 9, scale: 6}).notNull(),
