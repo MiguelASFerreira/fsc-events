@@ -1,15 +1,21 @@
-import express from "express"
 import { CreateEvent } from "./application/CreateEvent.js"
 import { EventRepositoryDrizzle } from "./resources/EventRepository.js"
 import { db } from "./db/client.js"
+import fastify, { type FastifyReply, type FastifyRequest } from "fastify"
 
-const app = express()
+const app = fastify()
 
-app.use(express.json())
 
-app.post("/events", async (req, res) => {
+app.post("/events", async (req: FastifyRequest, res: FastifyReply) => {
   const { name, ticketPriceInCents, latitude, longitude, date, ownerId } =
-    req.body
+    req.body as {
+      name: string
+      ticketPriceInCents: number
+      latitude: number
+      longitude: number
+      date: string
+      ownerId: string
+    }
 
   try {
     const eventRepositoryDrizzle = new EventRepositoryDrizzle(db)
@@ -23,12 +29,12 @@ app.post("/events", async (req, res) => {
       ownerId,
     })
 
-    return res.status(201).json(event)
+    return res.status(201).send(event)
   } catch (error: any) {
-    return res.status(400).json({ message: error?.message })
+    return res.status(400).send({ message: error?.message })
   }
 })
 
-app.listen(3000, () => {
+app.listen({ port: 3000 }, () => {
   console.log("Server is running on http://localhost:3000")
 })
