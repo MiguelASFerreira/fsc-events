@@ -4,20 +4,45 @@ import { db } from "./db/client.js"
 import fastify, { type FastifyReply, type FastifyRequest } from "fastify"
 import type { ZodTypeProvider } from "fastify-type-provider-zod"
 import {
+  jsonSchemaTransform,
   serializerCompiler,
   validatorCompiler,
 } from "fastify-type-provider-zod"
 import z from "zod"
+import fastifySwagger from "@fastify/swagger"
+import fastifySwaggerUi from "@fastify/swagger-ui"
 
 const app = fastify()
 
 app.setValidatorCompiler(validatorCompiler)
 app.setSerializerCompiler(serializerCompiler)
 
+await app.register(fastifySwagger, {
+  openapi: {
+    info: {
+      title: "Events API",
+      description: "API for managing events",
+      version: "1.0.0",
+    },
+    servers: [
+      {
+        description: "Local server",
+        url: "http://localhost:8080",
+      },
+    ],
+  },
+  transform: jsonSchemaTransform,
+})
+
+await app.register(fastifySwaggerUi, {
+  routePrefix: "/docs",
+})
+
 app.withTypeProvider<ZodTypeProvider>().route({
   method: "POST",
   url: "/events",
   schema: {
+    tags: ["Events"],
     body: z.object({
       name: z.string(),
       ticketPriceInCents: z.number(),
@@ -26,19 +51,24 @@ app.withTypeProvider<ZodTypeProvider>().route({
       date: z.iso.datetime(),
       ownerId: z.uuid(),
     }),
-    response: z.object({
-      id: z.uuid(),
-      name: z.string(),
-      ticketPriceInCents: z.number(),
-      latitude: z.number(),
-      longitude: z.number(),
-      date: z.iso.datetime(),
-      ownerId: z.uuid(),
-    }),
-    400: z.object({
-      message: z.string(),
-    }),
+
+    response: {
+      201: z.object({
+        id: z.uuid(),
+        name: z.string(),
+        ticketPriceInCents: z.number(),
+        latitude: z.number(),
+        longitude: z.number(),
+        date: z.iso.datetime(),
+        ownerId: z.uuid(),
+      }),
+
+      400: z.object({
+        message: z.string(),
+      }),
+    },
   },
+
   handler: async (req, res) => {
     const { name, ticketPriceInCents, latitude, longitude, date, ownerId } =
       req.body
@@ -65,6 +95,7 @@ app.withTypeProvider<ZodTypeProvider>().route({
   },
 })
 
-app.listen({ port: 3000 }, () => {
-  console.log("Server is running on http://localhost:3000")
+await app.ready()
+await app.listen({ port: 8080 }, () => {
+  console.log("Server is running on http://localhost:8080")
 })
