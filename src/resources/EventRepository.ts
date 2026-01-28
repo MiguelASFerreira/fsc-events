@@ -16,6 +16,8 @@ export class EventRepositoryDrizzle implements EventRepository {
     const [output] = await db
       .insert(schema.events)
       .values({
+        // @ts-expect-error - d
+        id: input.id,
         ownerId: input.ownerId,
         latitude: input.latitude,
         longitude: input.longitude,
@@ -27,8 +29,8 @@ export class EventRepositoryDrizzle implements EventRepository {
     return {
       id: output.id,
       ownerId: output.ownerId,
-      latitude: output.latitude,
-      longitude: output.longitude,
+      latitude: Number(output.latitude),
+      longitude: Number(output.longitude),
       ticketPriceInCents: output.ticketPriceInCents,
       date: output.date,
       name: output.name,

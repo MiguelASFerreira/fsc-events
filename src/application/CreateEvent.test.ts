@@ -21,6 +21,7 @@ describe("Create Event", () => {
     }
 
     const output = await createEvent.execute(input)
+    expect(output.id).toBeDefined()
     expect(output.name).toBe(input.name)
     expect(output.ticketPriceInCents).toBe(input.ticketPriceInCents)
   })
