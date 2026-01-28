@@ -1,6 +1,7 @@
 import express from "express"
 import { CreateEvent } from "./application/CreateEvent.js"
 import { EventRepositoryDrizzle } from "./resources/EventRepository.js"
+import { db } from "./db/client.js"
 
 const app = express()
 
@@ -11,7 +12,7 @@ app.post("/events", async (req, res) => {
     req.body
 
   try {
-    const eventRepositoryDrizzle = new EventRepositoryDrizzle()
+    const eventRepositoryDrizzle = new EventRepositoryDrizzle(db)
     const createEvent = new CreateEvent(eventRepositoryDrizzle)
     const event = await createEvent.execute({
       name,

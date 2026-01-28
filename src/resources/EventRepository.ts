@@ -9,8 +9,13 @@ if (!process.env.DATABASE_URL) {
 }
 
 export class EventRepositoryDrizzle implements EventRepository {
+  database: typeof db
+  constructor(database: typeof db) {
+    this.database = database
+  }
+
   async getByDateLatAndLong(params: { date: Date; latitude: number; longitude: number }): Promise<OnSiteEvent | null> {
-    const output = await db.query.events.findFirst({
+    const output = await this.database.query.events.findFirst({
       where: and(
         eq(schema.events.date, params.date),
         eq(schema.events.latitude, params.latitude.toString()),
@@ -34,7 +39,7 @@ export class EventRepositoryDrizzle implements EventRepository {
   }
 
   async create(input: OnSiteEvent): Promise<OnSiteEvent> {
-    const [output] = await db
+    const [output] = await this.database
       .insert(schema.events)
       .values({
         // @ts-expect-error - d
