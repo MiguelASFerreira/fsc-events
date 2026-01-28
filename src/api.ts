@@ -11,6 +11,7 @@ import {
 import z from "zod"
 import fastifySwagger from "@fastify/swagger"
 import fastifySwaggerUi from "@fastify/swagger-ui"
+import { InvalidOwnerIdError } from "./application/errors/index.js"
 
 const app = fastify()
 
@@ -64,6 +65,7 @@ app.withTypeProvider<ZodTypeProvider>().route({
       }),
 
       400: z.object({
+        code: z.string().optional(),
         message: z.string(),
       }),
     },
@@ -90,7 +92,15 @@ app.withTypeProvider<ZodTypeProvider>().route({
         date: event.date.toISOString(),
       })
     } catch (error: any) {
-      return res.status(400).send({ message: error.message })
+      console.log(error)
+      if (error instanceof InvalidOwnerIdError) {
+        return res
+          .status(400)
+          .send({ code: error.code, message: error.message })
+      }
+      return res
+        .status(400)
+        .send({ code: "SERVER_ERROR", message: error.message })
     }
   },
 })

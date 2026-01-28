@@ -3,6 +3,7 @@ import { startPostgresTesteDb } from "../db/test-db.js"
 import { EventRepositoryDrizzle } from "../resources/EventRepository.js"
 import { events } from "../db/schema.js"
 import { CreateEvent } from "./CreateEvent.js"
+import { InvalidOwnerIdError } from "./errors/index.js"
 
 describe("Create Event", () => {
   const makeSut = () => {
@@ -53,7 +54,7 @@ describe("Create Event", () => {
     }
 
     const output = sut.execute(input)
-    await expect(output).rejects.toThrow(new Error("Invalid ownerId"))
+    await expect(output).rejects.toThrow(new InvalidOwnerIdError())
   })
 
   it("Deve retornar 400 se o ticketPriceInCents for negativo", async () => {
@@ -142,7 +143,7 @@ describe("Create Event", () => {
     )
   })
 
-  it(("Deve chamar o repository com o s parâmetros corretos"), async () => {
+  it(("Deve chamar o repository com os parâmetros corretos"), async () => {
     const { sut, eventRepository } = makeSut()
     const spy = vi.spyOn(eventRepository, "create")
     const input = {
