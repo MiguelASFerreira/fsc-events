@@ -1,18 +1,31 @@
+import { StartedPostgreSqlContainer } from "@testcontainers/postgresql"
 import { db } from "../db/client.js"
+import { startPostgresTesteDb } from "../db/test-db.js"
 import { EventRepositoryDrizzle } from "../resources/EventRepository.js"
-import { CreateEvent, type EventRepository } from "./CreateEvent.js"
+import { CreateEvent } from "./CreateEvent.js"
+import { events } from "../db/schema.js"
 
 describe("Create Event", () => {
-  // class EventRepositoryInMemory implements EventRepository {
-  //   events: any[] = []
-  //   async create(input: any) {
-  //     this.events = [...this.events, input]
-  //     return input
-  //   }
-  // }
+  let database: typeof db
+  let container: StartedPostgreSqlContainer
 
-  const createEvent = new CreateEvent(new EventRepositoryDrizzle(db))
+  beforeAll(async () => {
+    const testDatabase = await startPostgresTesteDb()
+    database = testDatabase.db
+    container = testDatabase.container
+  }, 30_000)
+
+  beforeEach(async () => {
+    await database.delete(events).execute()
+  }, 30_000)
+
+  // afterAll(async () => {
+  //   await database.$client.end()
+  //   await container.stop()
+  // })
+
   it("Deve criar um evento com sucesso", async () => {
+    const createEvent = new CreateEvent(new EventRepositoryDrizzle(database))
     const input = {
       name: "Evento de Teste",
       ticketPriceInCents: 1000,
@@ -30,6 +43,7 @@ describe("Create Event", () => {
   })
 
   it("Deve retornar 400 se o ownerId não for um UUID", async () => {
+    const createEvent = new CreateEvent(new EventRepositoryDrizzle(database))
     const input = {
       name: "Evento de Teste",
       ticketPriceInCents: 1000,
@@ -44,6 +58,7 @@ describe("Create Event", () => {
   })
 
   it("Deve retornar 400 se o ticketPriceInCents for negativo", async () => {
+    const createEvent = new CreateEvent(new EventRepositoryDrizzle(database))
     const input = {
       name: "Evento de Teste",
       ticketPriceInCents: -1000,
@@ -58,6 +73,7 @@ describe("Create Event", () => {
   })
 
   it("Deve retornar 400 se a latitude for inválida", async () => {
+    const createEvent = new CreateEvent(new EventRepositoryDrizzle(database))
     const input = {
       name: "Evento de Teste",
       ticketPriceInCents: 1000,
@@ -72,6 +88,7 @@ describe("Create Event", () => {
   })
 
   it("Deve retornar 400 se a longitude for inválida", async () => {
+    const createEvent = new CreateEvent(new EventRepositoryDrizzle(database))
     const input = {
       name: "Evento de Teste",
       ticketPriceInCents: 1000,
@@ -86,6 +103,7 @@ describe("Create Event", () => {
   })
 
   it("Deve retornar 400 se a data não for no futuro", async () => {
+    const createEvent = new CreateEvent(new EventRepositoryDrizzle(database))
     const input = {
       name: "Evento de Teste",
       ticketPriceInCents: 1000,
@@ -101,7 +119,8 @@ describe("Create Event", () => {
     )
   })
 
-  it.only("Deve lançar um erro se já existir um evento para a mesma data, latitude e longitude", async () => {
+  it("Deve lançar um erro se já existir um evento para a mesma data, latitude e longitude", async () => {
+    const createEvent = new CreateEvent(new EventRepositoryDrizzle(database))
     const date = new Date(new Date().setHours(new Date().getHours() + 2))
     const input = {
       name: "Evento de Teste",

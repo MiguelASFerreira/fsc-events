@@ -4,10 +4,6 @@ import { and, eq } from "drizzle-orm"
 import * as schema from "../db/schema.js"
 import { db } from "../db/client.js"
 
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL is not defined")
-}
-
 export class EventRepositoryDrizzle implements EventRepository {
   database: typeof db
   constructor(database: typeof db) {

@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "test": "vitest",
-     "test:watch": "vitest --watch",
+    "test:watch": "vitest --watch",
     "test:coverage": "vitest run --coverage",
     "prepare": "husky",
     "dev": "tsx --watch --env-file=.env src/api.ts"
@@ -38,6 +38,7 @@
     "vitest": "3.2.4"
   },
   "dependencies": {
+    "@testcontainers/postgresql": "11.5.1",
     "axios": "1.11.0",
     "dotenv": "17.2.1",
     "drizzle-orm": "0.44.3",
