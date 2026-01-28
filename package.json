@@ -4,9 +4,10 @@
   "type": "module",
   "scripts": {
     "test": "vitest",
+     "test:watch": "vitest --watch",
     "test:coverage": "vitest run --coverage",
     "prepare": "husky",
-    "dev": "tsx --watch --env-file=.env src/index.ts"
+    "dev": "tsx --watch --env-file=.env src/api.ts"
   },
   "engines": {
     "node": ">=22",
@@ -37,6 +38,7 @@
     "vitest": "3.2.4"
   },
   "dependencies": {
+    "axios": "1.11.0",
     "dotenv": "17.2.1",
     "drizzle-orm": "0.44.3",
     "eslint-config-prettier": "10.1.8",
