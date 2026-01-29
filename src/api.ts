@@ -11,7 +11,11 @@ import {
 import z from "zod"
 import fastifySwagger from "@fastify/swagger"
 import fastifySwaggerUi from "@fastify/swagger-ui"
-import { InvalidOwnerIdError } from "./application/errors/index.js"
+import {
+  EventAlreadyExistsError,
+  InvalidParameterError,
+  NotFoundError,
+} from "./application/errors/index.js"
 
 const app = fastify()
 
@@ -65,7 +69,11 @@ app.withTypeProvider<ZodTypeProvider>().route({
       }),
 
       400: z.object({
-        code: z.string().optional(),
+        code: z.string(),
+        message: z.string(),
+      }),
+      404: z.object({
+        code: z.string(),
         message: z.string(),
       }),
     },
@@ -93,9 +101,17 @@ app.withTypeProvider<ZodTypeProvider>().route({
       })
     } catch (error: any) {
       console.log(error)
-      if (error instanceof InvalidOwnerIdError) {
+      if (
+        error instanceof InvalidParameterError ||
+        error instanceof EventAlreadyExistsError
+      ) {
         return res
           .status(400)
+          .send({ code: error.code, message: error.message })
+      }
+      if (error instanceof NotFoundError) {
+        return res
+          .status(404)
           .send({ code: error.code, message: error.message })
       }
       return res

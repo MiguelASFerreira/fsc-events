@@ -3,7 +3,7 @@ import { startPostgresTesteDb } from "../db/test-db.js"
 import { EventRepositoryDrizzle } from "../resources/EventRepository.js"
 import { events } from "../db/schema.js"
 import { CreateEvent } from "./CreateEvent.js"
-import { InvalidOwnerIdError } from "./errors/index.js"
+import { EventAlreadyExistsError, InvalidParameterError } from "./errors/index.js"
 
 describe("Create Event", () => {
   const makeSut = () => {
@@ -17,12 +17,11 @@ describe("Create Event", () => {
   beforeAll(async () => {
     const testDatabase = await startPostgresTesteDb()
     database = testDatabase.db
-  }, 30_000)
+  })
 
   beforeEach(async () => {
     await database.delete(events).execute()
-  }, 30_000)
-
+  })
 
   it("Deve criar um evento com sucesso", async () => {
     const { sut } = makeSut()
@@ -54,7 +53,7 @@ describe("Create Event", () => {
     }
 
     const output = sut.execute(input)
-    await expect(output).rejects.toThrow(new InvalidOwnerIdError())
+    await expect(output).rejects.toThrow(new InvalidParameterError("ownerId"))
   })
 
   it("Deve retornar 400 se o ticketPriceInCents for negativo", async () => {
@@ -69,7 +68,9 @@ describe("Create Event", () => {
     }
 
     const output = sut.execute(input)
-    await expect(output).rejects.toThrow(new Error("Invalid ticket price"))
+    await expect(output).rejects.toThrow(
+      new InvalidParameterError("ticketPriceInCents must be positive")
+    )
   })
 
   it("Deve retornar 400 se a latitude for inválida", async () => {
@@ -84,7 +85,9 @@ describe("Create Event", () => {
     }
 
     const output = sut.execute(input)
-    await expect(output).rejects.toThrow(new Error("Invalid latitude"))
+    await expect(output).rejects.toThrow(
+      new InvalidParameterError("latitude must be between -90 and 90")
+    )
   })
 
   it("Deve retornar 400 se a longitude for inválida", async () => {
@@ -99,7 +102,9 @@ describe("Create Event", () => {
     }
 
     const output = sut.execute(input)
-    await expect(output).rejects.toThrow(new Error("Invalid longitude"))
+    await expect(output).rejects.toThrow(
+      new InvalidParameterError("longitude must be between -180 and 180")
+    )
   })
 
   it("Deve retornar 400 se a data não for no futuro", async () => {
@@ -115,7 +120,7 @@ describe("Create Event", () => {
 
     const output = sut.execute(input)
     await expect(output).rejects.toThrow(
-      new Error("Date must be in the future")
+      new InvalidParameterError("Date must be in the future")
     )
   })
 
@@ -137,13 +142,11 @@ describe("Create Event", () => {
 
     const output2 = sut.execute(input)
     await expect(output2).rejects.toThrow(
-      new Error(
-        "Event already exisits"
-      )
+      new EventAlreadyExistsError()
     )
   })
 
-  it(("Deve chamar o repository com os parâmetros corretos"), async () => {
+  it("Deve chamar o repository com os parâmetros corretos", async () => {
     const { sut, eventRepository } = makeSut()
     const spy = vi.spyOn(eventRepository, "create")
     const input = {
@@ -158,7 +161,7 @@ describe("Create Event", () => {
     await sut.execute(input)
     expect(spy).toHaveBeenCalledWith({
       id: expect.any(String),
-      ...input
+      ...input,
     })
   })
 })
