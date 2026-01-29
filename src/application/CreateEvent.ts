@@ -1,7 +1,20 @@
 import type { OnSiteEvent } from "./entities/OnSiteEvent.js"
-import { ErrorCode, EventAlreadyExistsError, InvalidParameterError } from "./errors/index.js"
+import {
+  EventAlreadyExistsError,
+  InvalidParameterError,
+} from "./errors/index.js"
 
 interface Input {
+  ownerId: string
+  latitude: number
+  longitude: number
+  ticketPriceInCents: number
+  date: Date
+  name: string
+}
+
+interface Output {
+  id: string
   ownerId: string
   latitude: number
   longitude: number
@@ -22,7 +35,7 @@ export interface EventRepository {
 export class CreateEvent {
   constructor(private eventRepository: EventRepository) {}
 
-  async execute(input: Input) {
+  async execute(input: Input): Promise<Output> {
     const { ownerId, latitude, longitude, ticketPriceInCents, date, name } =
       input
 
@@ -31,15 +44,11 @@ export class CreateEvent {
         ownerId
       )
     ) {
-      throw new InvalidParameterError(
-        "ownerId"
-      )
+      throw new InvalidParameterError("ownerId")
     }
 
     if (ticketPriceInCents < 0) {
-      throw new InvalidParameterError(
-        "ticketPriceInCents must be positive"
-      )
+      throw new InvalidParameterError("ticketPriceInCents must be positive")
     }
 
     if (latitude < -90 || latitude > 90) {

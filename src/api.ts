@@ -22,6 +22,9 @@ const app = fastify()
 app.setValidatorCompiler(validatorCompiler)
 app.setSerializerCompiler(serializerCompiler)
 
+const eventRepositoryDrizzle = new EventRepositoryDrizzle(db)
+const createEvent = new CreateEvent(eventRepositoryDrizzle)
+
 await app.register(fastifySwagger, {
   openapi: {
     info: {
@@ -76,6 +79,10 @@ app.withTypeProvider<ZodTypeProvider>().route({
         code: z.string(),
         message: z.string(),
       }),
+      409: z.object({
+        code: z.string(),
+        message: z.string(),
+      }),
       500: z.object({
         code: z.string(),
         message: z.string(),
@@ -88,8 +95,6 @@ app.withTypeProvider<ZodTypeProvider>().route({
       req.body
 
     try {
-      const eventRepositoryDrizzle = new EventRepositoryDrizzle(db)
-      const createEvent = new CreateEvent(eventRepositoryDrizzle)
       const event = await createEvent.execute({
         name,
         ticketPriceInCents,
@@ -105,10 +110,7 @@ app.withTypeProvider<ZodTypeProvider>().route({
       })
     } catch (error: any) {
       console.log(error)
-      if (
-        error instanceof InvalidParameterError ||
-        error instanceof EventAlreadyExistsError
-      ) {
+      if (error instanceof InvalidParameterError) {
         return res
           .status(400)
           .send({ code: error.code, message: error.message })
@@ -116,6 +118,11 @@ app.withTypeProvider<ZodTypeProvider>().route({
       if (error instanceof NotFoundError) {
         return res
           .status(404)
+          .send({ code: error.code, message: error.message })
+      }
+      if (error instanceof EventAlreadyExistsError) {
+        return res
+          .status(409)
           .send({ code: error.code, message: error.message })
       }
       return res
