@@ -76,6 +76,10 @@ app.withTypeProvider<ZodTypeProvider>().route({
         code: z.string(),
         message: z.string(),
       }),
+      500: z.object({
+        code: z.string(),
+        message: z.string(),
+      }),
     },
   },
 
@@ -115,7 +119,7 @@ app.withTypeProvider<ZodTypeProvider>().route({
           .send({ code: error.code, message: error.message })
       }
       return res
-        .status(400)
+        .status(500)
         .send({ code: "SERVER_ERROR", message: error.message })
     }
   },
